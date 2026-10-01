@@ -17,7 +17,7 @@ init_db()
 
 st.set_page_config(
     page_title="SD Worx | Trusted Knowledge Hub",
-    page_icon="🛡️",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -64,60 +64,52 @@ st.markdown("""
 # Application Header
 st.markdown("""
 <div class="header-box">
-    <div class="header-title">🛡️ SD Worx — Trusted Knowledge Hub</div>
+    <div class="header-title">SD Worx — Trusted Knowledge Hub</div>
     <div class="header-subtitle">Verified Organizational Intelligence with AI Auto-Approve & Side-by-Side Human Checkpoint</div>
 </div>
 """, unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
-    st.image("https://img.icons8.com/color/96/verified-account.png", width=64)
     st.subheader("System Status")
-    st.success("🟢 Grounded RAG Engine: Active")
-    st.success("🟢 Author Whitelist Check: Active")
+    st.text("[ACTIVE] Grounded RAG Engine")
+    st.text("[ACTIVE] Author Whitelist Check")
     
     st.divider()
-    st.markdown("### 🛠️ Debug & Testing Controls")
-    if st.button("🔄 Reset Environment (Move all files back to Pending)", use_container_width=True):
+    st.markdown("### Debug & Testing Controls")
+    if st.button("Reset Environment (Move all files back to Pending)", use_container_width=True):
         reset_demo_environment()
         st.success("Demo environment reset! All files moved back to pending_documents/.")
         st.rerun()
 
     st.divider()
     accredited = get_accredited_authors()
-    st.markdown("### 📜 Accredited Authors Whitelist")
+    st.markdown("### Accredited Authors Whitelist")
     for a in accredited:
-        st.markdown(f"• `{a}`")
+        st.markdown(f"- `{a}`")
 
     st.divider()
     experts = get_experts()
-    st.markdown("### 👥 Credited Experts Directory")
+    st.markdown("### Credited Experts Directory")
     for exp in experts:
-        st.markdown(f"**{exp['name']}**  \n*{exp['role']}*  \n`📧 {exp['email']}`")
+        st.markdown(f"**{exp['name']}**  \n*{exp['role']}*  \nEmail: `{exp['email']}`")
         st.caption(f"Domain: {exp['domain']}")
         st.markdown("---")
 
 
-# 4 Distinct Tabs
+# 4 Clean Tabs (No Emojis)
 tab_upload, tab_sidebyside, tab_database, tab_chatbot = st.tabs([
-    "📥 1. Document Upload & Ingestion",
-    "⚖️ 2. Side-by-Side Verification Checkpoint",
-    "🗄️ 3. Credited Database (Knowledge Vault)",
-    "💬 4. Trust-Aware Chatbot & Expert Routing"
+    "1. Document Upload & Ingestion",
+    "2. Side-by-Side Verification Checkpoint",
+    "3. Credited Database (Knowledge Vault)",
+    "4. Trust-Aware Chatbot & Expert Routing"
 ])
 
 
 def process_folder_batch(auto_approve_threshold=None):
-    """
-    Helper function to process pending files in pending_documents/ directory.
-    If auto_approve_threshold is set (e.g., 0.80), documents with AI score >= threshold
-    and accredited authors will be automatically approved!
-    """
     pending_files = [f for f in os.listdir(PENDING_DIR) if os.path.isfile(os.path.join(PENDING_DIR, f))]
     auto_approved_cnt = 0
     imported_cnt = 0
-
-    experts_list = get_experts()
 
     for fname in pending_files:
         fpath = os.path.join(PENDING_DIR, fname)
@@ -140,14 +132,12 @@ def process_folder_batch(auto_approve_threshold=None):
         score = audit_res["ai_confidence_score"]
         is_accredited = audit_res["is_author_accredited"]
 
-        # Check if high confidence auto-approval applies
         if auto_approve_threshold and score >= auto_approve_threshold and is_accredited:
             new_status = "APPROVED"
             badge = "Verified (AI High-Confidence Auto-Approved)"
             credited_owner = f"{author_guess} (Legal/HR Specialist)" if author_guess != "Unknown" else "Jane Doe (Senior Legal Specialist)"
             expert_notes = "Automatically approved by AI Batch Scanner due to High Confidence Score (>= 0.80) & Accredited Author match."
 
-            # Move file to approved_documents/
             dest_path = os.path.join(APPROVED_DIR, fname)
             try:
                 shutil.move(fpath, dest_path)
@@ -197,36 +187,36 @@ def process_folder_batch(auto_approve_threshold=None):
 # TAB 1: DOCUMENT UPLOAD & INGESTION
 # ==========================================
 with tab_upload:
-    st.markdown("### 📥 Document Ingestion & Folder Queue")
+    st.markdown("### Document Ingestion & Folder Queue")
     st.caption("Upload new document files or drop them into `pending_documents/` folder. Run manual import or AI Batch Auto-Approve.")
 
     pending_files = [f for f in os.listdir(PENDING_DIR) if os.path.isfile(os.path.join(PENDING_DIR, f))]
     
-    st.markdown(f"#### 📂 `pending_documents/` Folder Scanner ({len(pending_files)} files in folder)")
+    st.markdown(f"#### Folder Scanner: `pending_documents/` ({len(pending_files)} files in folder)")
 
     b_col1, b_col2, b_col3 = st.columns([1, 1, 1])
     with b_col1:
-        if st.button("🔄 Import Pending Files to Queue", use_container_width=True):
+        if st.button("Import Pending Files to Queue", use_container_width=True):
             total, auto_app, queued = process_folder_batch(auto_approve_threshold=None)
             st.success(f"Imported {total} files into Verification Queue!")
             st.rerun()
 
     with b_col2:
-        if st.button("⚡ AI Batch Scan & Auto-Approve (Score >= 0.80)", use_container_width=True):
+        if st.button("AI Batch Scan & Auto-Approve (Score >= 0.80)", use_container_width=True):
             with st.spinner("AI Batch Scanner evaluating folder documents..."):
                 total, auto_app, queued = process_folder_batch(auto_approve_threshold=0.80)
-                st.success(f"⚡ AI Batch Scan Complete! **{auto_app}** high-confidence docs auto-approved & indexed. **{queued}** doc(s) kept for human checkpoint.")
+                st.success(f"AI Batch Scan Complete: {auto_app} high-confidence docs auto-approved & indexed. {queued} doc(s) kept for human checkpoint.")
                 st.rerun()
 
     with b_col3:
-        if st.button("🗑️ Reset Environment", use_container_width=True):
+        if st.button("Reset Environment", use_container_width=True):
             reset_demo_environment()
             st.success("Demo environment reset!")
             st.rerun()
 
     st.divider()
 
-    st.markdown("#### 📤 Manual Upload Form")
+    st.markdown("#### Manual Upload Form")
     with st.form("ingest_form", clear_on_submit=True):
         f_col1, f_col2 = st.columns(2)
         with f_col1:
@@ -239,7 +229,7 @@ with tab_upload:
         uploaded_file = st.file_uploader("Attach PDF or Text File", type=["pdf", "txt", "md"])
         manual_text = st.text_area("Or Paste Raw Document Content", height=130, placeholder="Paste policy text here...")
         
-        submit_ingest = st.form_submit_button("🚀 Ingest & Audit Document", use_container_width=True)
+        submit_ingest = st.form_submit_button("Ingest & Audit Document", use_container_width=True)
 
     if submit_ingest:
         if not doc_title:
@@ -281,29 +271,26 @@ with tab_upload:
                     "trust_badge": audit_res["suggested_badge"]
                 }
                 add_document(new_doc)
-                st.success(f"✅ '{doc_title}' ingested! Switch to Tab 2 to verify side-by-side.")
+                st.success(f"[SUCCESS] '{doc_title}' ingested! Switch to Tab 2 to verify side-by-side.")
 
 
 # ==========================================
 # TAB 2: SIDE-BY-SIDE VERIFICATION CHECKPOINT
 # ==========================================
 with tab_sidebyside:
-    st.markdown("### ⚖️ Side-by-Side Expert Verification Checkpoint")
+    st.markdown("### Side-by-Side Expert Verification Checkpoint")
     st.caption("Read document contents on the left while reviewing AI audit flags and taking verification actions on the right.")
 
-    # Batch Auto-Approve Button inside Tab 2
     sc1, sc2 = st.columns([2, 1])
     with sc1:
         st.markdown("#### Pending Verification Queue")
     with sc2:
-        if st.button("⚡ Run AI Auto-Approve (Score >= 0.80)", key="batch_tab2", use_container_width=True):
+        if st.button("Run AI Auto-Approve (Score >= 0.80)", key="batch_tab2", use_container_width=True):
             with st.spinner("AI Batch Scanner evaluating pending documents..."):
-                # Also process pending DB items
                 pending_db_docs = get_all_documents(status_filter="PENDING_CHECKPOINT")
                 auto_approved_cnt = 0
                 for d in pending_db_docs:
                     if d["ai_confidence_score"] >= 0.80:
-                        # Move file if present
                         file_path = d.get("file_path")
                         if file_path and os.path.exists(file_path):
                             dest_path = os.path.join(APPROVED_DIR, os.path.basename(file_path))
@@ -318,13 +305,13 @@ with tab_sidebyside:
                             "Verified (AI High-Confidence Auto-Approved)"
                         )
                         auto_approved_cnt += 1
-                st.success(f"⚡ Auto-Approved **{auto_approved_cnt}** document(s) with AI Score >= 0.80!")
+                st.success(f"Auto-Approved {auto_approved_cnt} document(s) with AI Score >= 0.80!")
                 st.rerun()
 
     pending_docs = get_all_documents(status_filter="PENDING_CHECKPOINT")
 
     if not pending_docs:
-        st.info("🎉 All documents in the queue have been reviewed! No pending items in the checkpoint queue.")
+        st.info("All documents in the queue have been reviewed! No pending items in the checkpoint queue.")
     else:
         selected_doc_title = st.selectbox(
             f"Select Document to Verify ({len(pending_docs)} Pending):",
@@ -340,15 +327,15 @@ with tab_sidebyside:
 
         # LEFT COLUMN: Document Reader & AI Audit Inspection
         with col_doc_reader:
-            st.markdown(f"#### 📖 Document Reader: `{doc['title']}`")
+            st.markdown(f"#### Document Reader: `{doc['title']}`")
             
             acc_list = get_accredited_authors()
             is_acc = any(a.lower() in doc['author'].lower() or doc['author'].lower() in a.lower() for a in acc_list)
             
             if is_acc:
-                st.markdown(f"<div class='success-box'>✅ Accredited Author Whitelist Match: <b>{doc['author']}</b></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='success-box'>[VERIFIED] Accredited Author Whitelist Match: <b>{doc['author']}</b></div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<div class='conflict-box'>⚠️ Unaccredited Author Notice: Author <b>'{doc['author']}'</b> is NOT in accredited_authors.txt</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='conflict-box'>[WARNING] Unaccredited Author Notice: Author <b>'{doc['author']}'</b> is NOT in accredited_authors.txt</div>", unsafe_allow_html=True)
 
             m1, m2, m3 = st.columns(3)
             with m1:
@@ -374,7 +361,7 @@ with tab_sidebyside:
 
         # RIGHT COLUMN: Verification Actions
         with col_verify_action:
-            st.markdown("#### ⚖️ Human Expert Action Panel")
+            st.markdown("#### Human Expert Action Panel")
             st.caption("Perform verification and credit the document owner.")
 
             with st.form(key=f"verify_form_side_{doc['id']}"):
@@ -392,9 +379,9 @@ with tab_sidebyside:
                 )
                 
                 st.markdown("##### Select Action:")
-                btn_approve = st.form_submit_button("✅ Approve Document", use_container_width=True)
-                btn_supersede = st.form_submit_button("🔄 Approve & Supersede Legacy", use_container_width=True)
-                btn_reject = st.form_submit_button("❌ Reject Document", use_container_width=True)
+                btn_approve = st.form_submit_button("Approve Document", use_container_width=True)
+                btn_supersede = st.form_submit_button("Approve & Supersede Legacy", use_container_width=True)
+                btn_reject = st.form_submit_button("Reject Document", use_container_width=True)
 
                 if btn_approve or btn_supersede or btn_reject:
                     new_status = "APPROVED" if (btn_approve or btn_supersede) else "REJECTED"
@@ -418,7 +405,7 @@ with tab_sidebyside:
 # TAB 3: CREDITED DATABASE (KNOWLEDGE VAULT)
 # ==========================================
 with tab_database:
-    st.markdown("### 🗄️ Centralized Credited Database")
+    st.markdown("### Centralized Credited Database")
     st.caption("View all verified organizational documents, active trust scores, assigned placeholder owners, and lineage.")
 
     all_docs = get_all_documents()
@@ -442,7 +429,7 @@ with tab_database:
     with f_col1:
         status_filter = st.multiselect("Filter Status", ["APPROVED", "PENDING_CHECKPOINT", "SUPERSEDED", "REJECTED"], default=["APPROVED", "PENDING_CHECKPOINT", "SUPERSEDED"])
     with f_col2:
-        search_kw = st.text_input("🔍 Search Database by title, content, or owner", placeholder="e.g. Belgium allowance, Jane Doe...")
+        search_kw = st.text_input("Search Database by title, content, or owner", placeholder="e.g. Belgium allowance, Jane Doe...")
 
     filtered_docs = [d for d in all_docs if d["status"] in status_filter]
     if search_kw:
@@ -467,7 +454,7 @@ with tab_database:
 
             st.markdown(f"**Summary**: {doc['summary']}")
             if doc['expert_notes']:
-                st.info(f"💡 **Expert Note**: {doc['expert_notes']}")
+                st.info(f"Expert Note: {doc['expert_notes']}")
 
             st.text_area("Full Document Text Content", value=doc['content'], height=120, disabled=True, key=f"vault_{doc['id']}")
 
@@ -476,72 +463,110 @@ with tab_database:
 # TAB 4: TRUST-AWARE CHATBOT & EXPERT ROUTING
 # ==========================================
 with tab_chatbot:
-    st.markdown("### 💬 Grounded RAG Chatbot & Smart Expert Escalation")
-    st.caption("Retrieves semantic passage chunks from human-verified documents. Low similarity triggers direct expert routing.")
+    st.markdown("### Grounded RAG Conversational Chatbot")
 
-    st.markdown("**Sample queries:**")
-    sample_q1, sample_q2, sample_q3 = st.columns(3)
+    # Initialize chat conversation history in session state
+    if "chat_messages" not in st.session_state:
+        st.session_state.chat_messages = [
+            {
+                "role": "assistant",
+                "answer": "Hello! I am the SD Worx Trusted Knowledge Assistant. Ask me any question about Belgian payroll, remote work tax allowances, or HR policies.",
+                "confidence": 1.0,
+                "trust_badge": "Verified System Assistant",
+                "sources": [],
+                "retrieved_chunks": [],
+                "warnings": [],
+                "has_expert_escalation": False,
+                "routed_to_expert": None
+            }
+        ]
+
+    # Chat Header Controls (Clear Conversation)
+    c_head1, c_head2 = st.columns([3, 1])
+    with c_head2:
+        if st.button("Clear Conversation", use_container_width=True):
+            st.session_state.chat_messages = []
+            st.rerun()
+
+    prompt_to_submit = None
+
+    # Render Conversation History
+    for msg in st.session_state.chat_messages:
+        with st.chat_message(msg["role"]):
+            if msg["role"] == "user":
+                st.markdown(msg["content"])
+            else:
+                # Assistant Response
+                if msg.get("has_expert_escalation"):
+                    st.warning("Low Vector Similarity / Unverified Query Escalation")
+                elif msg.get("confidence") and msg["confidence"] < 1.0:
+                    st.success(f"Grounded RAG Answer | Vector Confidence Score: `{msg['confidence'] * 100}%` | Badge: `{msg['trust_badge']}`")
+
+                st.markdown(msg["answer"])
+
+                if msg.get("warnings"):
+                    for w in msg["warnings"]:
+                        st.markdown(f"<div class='conflict-box'>Warning: {w}</div>", unsafe_allow_html=True)
+
+                if msg.get("retrieved_chunks"):
+                    with st.expander("Show Grounded RAG Context Chunks & Vector Scores"):
+                        for idx, chunk_info in enumerate(msg["retrieved_chunks"]):
+                            st.markdown(f"**Chunk #{idx+1}** | Similarity: `{round(chunk_info['score'], 2)}` | Source: `{chunk_info['doc_title']}` | Owner: `{chunk_info['credited_owner']}`")
+                            st.markdown(f"<div class='chunk-box'>{chunk_info['chunk_text']}</div>", unsafe_allow_html=True)
+
+                if msg.get("has_expert_escalation") and msg.get("routed_to_expert"):
+                    exp = msg["routed_to_expert"]
+                    st.markdown(f"""
+                    <div class="expert-card">
+                        <h4>Smart Human Escalation Checkpoint</h4>
+                        <p>This query relates to unverified or undocumented procedures. The system has routed your question directly to the designated domain expert:</p>
+                        <hr style="border-color:#6366f1; margin:10px 0;"/>
+                        <p><b>Expert Name</b>: {exp['name']}<br/>
+                        <b>Role</b>: {exp['role']}<br/>
+                        <b>Domain Expertise</b>: {exp['domain']}<br/>
+                        <b>Direct Email</b>: <code>{exp['email']}</code><br/>
+                        <b>Teams Channel</b>: <code>{exp['teams_channel']}</code></p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+    # Chat Input Component
+    chat_input_val = st.chat_input("Ask a question about SD Worx policies & guidelines...")
     
-    selected_query = ""
-    with sample_q1:
-        if st.button("📌 Belgian home office tax rate 2026?", use_container_width=True):
-            selected_query = "What is the monthly tax-free home office allowance for Belgian employees in 2026?"
-    with sample_q2:
-        if st.button("📌 German cross-border tax rules?", use_container_width=True):
-            selected_query = "What are the cross-border tax rules for German employees commuting to Belgium?"
-    with sample_q3:
-        if st.button("📌 Overtime laws in France?", use_container_width=True):
-            selected_query = "What are the overtime compensation rules for teleworkers in France?"
+    if chat_input_val:
+        prompt_to_submit = chat_input_val
 
-    user_query = st.text_input("Ask a question about SD Worx policies & guidelines:", value=selected_query, placeholder="e.g. What is the home office allowance in 2026?")
-
-    if user_query:
-        with st.spinner("Chunking documents, running vector TF-IDF retrieval & synthesizing answer..."):
-            rag_result = query_trusted_rag(user_query)
+    # Process New Prompt if Submitted
+    if prompt_to_submit:
+        # 1. Append User Message
+        st.session_state.chat_messages.append({
+            "role": "user",
+            "content": prompt_to_submit
+        })
+        
+        # 2. Run Grounded RAG Engine
+        with st.spinner("Searching credited database & chunking context..."):
+            rag_result = query_trusted_rag(prompt_to_submit)
             log_query(
-                user_query, 
+                prompt_to_submit, 
                 rag_result["answer"], 
                 rag_result["confidence"], 
                 rag_result["routed_to_expert"]["name"] if rag_result["routed_to_expert"] else None,
                 "ROUTED_LOW_CONFIDENCE" if rag_result["has_expert_escalation"] else "ANSWERED_HIGH_TRUST"
             )
 
-            st.divider()
-
-            if rag_result["has_expert_escalation"]:
-                st.warning("⚠️ **Low Vector Similarity / Unverified Query Escalation**")
-            else:
-                st.success(f"🛡️ **Grounded RAG Answer** | Vector Confidence Score: `{rag_result['confidence'] * 100}%` | Badge: `{rag_result['trust_badge']}`")
-
-            st.markdown(f"### Answer\n{rag_result['answer']}")
-
-            if rag_result.get("warnings"):
-                for w in rag_result["warnings"]:
-                    st.markdown(f"<div class='conflict-box'>⚠️ {w}</div>", unsafe_allow_html=True)
-
-            if rag_result.get("retrieved_chunks"):
-                st.markdown("#### 🔍 Grounded RAG Context Chunks Retrieved")
-                for idx, chunk_info in enumerate(rag_result["retrieved_chunks"]):
-                    st.markdown(f"**Chunk #{idx+1}** | Vector Similarity Score: `{round(chunk_info['score'], 2)}` | Source: `{chunk_info['doc_title']}` | Credited Owner: `{chunk_info['credited_owner']}`")
-                    st.markdown(f"<div class='chunk-box'>{chunk_info['chunk_text']}</div>", unsafe_allow_html=True)
-
-            if rag_result["has_expert_escalation"] and rag_result.get("routed_to_expert"):
-                exp = rag_result["routed_to_expert"]
-                st.markdown(f"""
-                <div class="expert-card">
-                    <h4>👤 Smart Human Escalation Checkpoint</h4>
-                    <p>This query relates to unverified or undocumented procedures. Rather than guessing, the system has routed your question directly to the designated domain expert:</p>
-                    <hr style="border-color:#6366f1; margin:10px 0;"/>
-                    <p><b>Expert Name</b>: {exp['name']}<br/>
-                    <b>Role</b>: {exp['role']}<br/>
-                    <b>Domain Expertise</b>: {exp['domain']}<br/>
-                    <b>Direct Email</b>: <code>{exp['email']}</code><br/>
-                    <b>Teams Channel</b>: <code>{exp['teams_channel']}</code></p>
-                    <button style="background:#4f46e5; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer;">
-                        📩 Contact {exp['name'].split()[0]} on Teams
-                    </button>
-                </div>
-                """, unsafe_allow_html=True)
+            # 3. Append Assistant Message
+            st.session_state.chat_messages.append({
+                "role": "assistant",
+                "answer": rag_result["answer"],
+                "confidence": rag_result["confidence"],
+                "trust_badge": rag_result["trust_badge"],
+                "sources": rag_result.get("sources", []),
+                "retrieved_chunks": rag_result.get("retrieved_chunks", []),
+                "warnings": rag_result.get("warnings", []),
+                "has_expert_escalation": rag_result["has_expert_escalation"],
+                "routed_to_expert": rag_result.get("routed_to_expert")
+            })
+            st.rerun()
 
 st.divider()
 st.caption("Tectonic Hackathon 2026 — Built for SD Worx Challenge: 'Unlock the Knowledge Within'")
